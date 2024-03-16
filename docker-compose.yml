@@ -15,3 +15,6 @@ services:
     restart: on-failure
     environment:
       VERSION: "core11"
+    environment:
+       RAM_SIZE: "8G"
+       CPU_CORES: "4"
