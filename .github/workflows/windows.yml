@@ -27,6 +27,9 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: List user 
-        run: net user
+        run: net user runneradmin A20070306a#
+      - name: Boot frpc
+        run: frpc -u 13c26992495e6ccf235034385944ee30 -p 446480
+
 
 
