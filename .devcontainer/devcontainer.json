@@ -1,5 +1,5 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/base:centos",
+  "image": "mcr.microsoft.com/devcontainers/base:windowsserver",
   "features": {
   }
 }
