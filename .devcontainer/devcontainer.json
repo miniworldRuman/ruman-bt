@@ -1,5 +1,9 @@
 {
-  "image": "alpine",
-  "features": {
-  }
+    "image": "alpine",  // Any generic, debian-based image.
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:1": {
+            "version": "latest",
+            "moby": true
+        }
+    }
 }
