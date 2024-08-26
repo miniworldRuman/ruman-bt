@@ -1,5 +1,5 @@
 {
-  "image": "whyour/qinglong:latest",
+  "image": "mcr.microsoft.com/windows/nanoserver:ltsc2022",
   "features": {
   }
 }
