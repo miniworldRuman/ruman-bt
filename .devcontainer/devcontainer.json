@@ -1,9 +1,10 @@
 {
     "image": "alpine",  // Any generic, debian-based image.
     "features": {
-        "ghcr.io/devcontainers/features/docker-in-docker:1": {
+        "qinglong": {
             "version": "latest",
-            "moby": true
+            "moby": true ,
+            "portsAttributes": "3000"
         }
     }
 }
