@@ -1,5 +1,5 @@
 {
-  "image": "budtmo/docker-android:emulator_11.0",
+  "image": "whyour/qinglong:latest",
   "features": {
   }
 }
