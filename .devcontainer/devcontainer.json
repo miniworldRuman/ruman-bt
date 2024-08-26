@@ -1,5 +1,5 @@
 {
-  "image": "alpine",
+  "image": "budtmo/docker-android:emulator_11.0",
   "features": {
   }
 }
