@@ -1,6 +1,7 @@
 {
     "name": "my-project-devcontainer",
-    "image": "aze456/deepin-desktop",  // Any generic, debian-based image.
+    "image": "centos",  // Any generic, debian-based image.
     "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
     }
 }
