@@ -1,6 +1,6 @@
 {
     "image": "centos",  // Any generic, debian-based image.
     "features": {
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+        "docker": {}
     }
 }
