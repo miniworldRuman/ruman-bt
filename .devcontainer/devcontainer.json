@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "deepin",  // Any generic, debian-based image.
+    "image": "aze456/deepin-desktop",  // Any generic, debian-based image.
     "features": {
     }
 }
