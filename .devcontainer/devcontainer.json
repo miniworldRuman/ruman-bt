@@ -1,6 +1,7 @@
 {
     "name": "my-project-devcontainer",
-    "image": "mcr.microsoft.com/devcontainers/base:alpine ",  // Any generic, debian-based image.
+    "image": "alpine",  // Any generic, debian-based image.
     "features": {
+        "ghcr.io/cirolosapio/devcontainers-features/alpine-docker-outside-of-docker:0": {}
     }
 }
