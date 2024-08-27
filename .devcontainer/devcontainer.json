@@ -1,7 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "alpine",  // Any generic, debian-based image.
+    "image": "deepin",  // Any generic, debian-based image.
     "features": {
-        "ghcr.io/cirolosapio/devcontainers-features/alpine-docker-outside-of-docker:0": {}
     }
 }
