@@ -1,6 +1,6 @@
 {
-    "image": "centos",  // Any generic, debian-based image.
+    "name": "my-project-devcontainer",
+    "image": "mcr.microsoft.com/devcontainers/base:alpine ",  // Any generic, debian-based image.
     "features": {
-        "docker": {}
     }
 }
