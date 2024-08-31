@@ -1,7 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "centos",  // Any generic, debian-based image.
+    "image": "ubuntu",  // Any generic, debian-based image.
     "features": {
-        "ghcr.io/customink/codespaces-features/docker-log-level:1": {}
     }
 }
