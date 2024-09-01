@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "alpine",  // Any generic, debian-based image.
+    "image": "ghcr.io/miniworldruman/ruman-bt:sha256-4fb10689a7e4c6a544c89e90e44ae78f9b870e6bf1bd7ba708820ac7034e4e40.sig",  // Any generic, debian-based image.
     "features": {
     }
 }
