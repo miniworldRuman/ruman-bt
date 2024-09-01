@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "centos",  // Any generic, debian-based image.
+    "image": "alpine",  // Any generic, debian-based image.
     "features": {
     }
 }
