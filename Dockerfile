@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     software-properties-common  
   
 # 添加 Docker 官方 GPG 密钥  
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -  
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -  
   
 # 设置 Docker 版本存储库  
 RUN add-apt-repository \  
@@ -24,15 +24,12 @@ RUN apt-get update && apt-get install -y \
     docker-ce-cli \  
     containerd.io  
   
-# 将当前用户添加到 docker 组  
-RUN useradd -ms /bin/bash dockeruser  
-RUN usermod -aG docker dockeruser  
+# 将当前用户添加到 docker 组（这里使用 root 用户，因为容器默认是 root）  
+# 注意：在生产环境中，通常不建议以 root 用户运行 Docker  
+# 但由于这是 GitHub Actions 环境，我们保持现状  
   
-# 切换到 dockeruser 用户  
-USER dockeruser  
-  
-# 容器启动时运行 Docker 守护进程（注意：这通常不推荐在生产环境中使用）  
+# 容器启动时运行 Docker 守护进程（这通常不推荐，除非你有特殊需求）  
 ENTRYPOINT ["dockerd", "-H", "unix:///var/run/docker.sock"]  
   
-# 如果你需要在容器启动时运行其他服务或脚本，可以在这里设置 CMD 或 ENTRYPOINT  
+# 默认命令  
 CMD ["bash"]
