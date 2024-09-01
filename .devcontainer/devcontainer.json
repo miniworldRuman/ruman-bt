@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "ubuntu",  // Any generic, debian-based image.
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",  // Any generic, debian-based image.
     "features": {
     }
 }
