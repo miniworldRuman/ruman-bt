@@ -1,7 +1,6 @@
 {
     "name": "ubuntu",
     "build": "Dockerfile",
-    "remoteUser": "root",
     "features": {
         
     }
