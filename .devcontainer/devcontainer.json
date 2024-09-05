@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "centos:7",  // Any generic, debian-based image.
+    "image": "mcr.microsoft.com/windows/server/insider:10.0.26244.5000",  // Any generic, debian-based image.
     "features": {
     }
 }
