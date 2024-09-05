@@ -1,5 +1,5 @@
 # 基于 Ubuntu 20.04 镜像  
-FROM ubuntu:24.04  
+FROM ubuntu:22.04  
   
 # 更新包索引  
 RUN apt-get update && apt-get install -y \  
