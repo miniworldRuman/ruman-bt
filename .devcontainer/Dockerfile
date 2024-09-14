@@ -7,14 +7,13 @@ FROM ubuntu:24.04
 #
 # Distribution configuration
 #
-
 # Add some core repos
-RUN apt-get update && \
-	apt-get install -y sudo curl zip openssl build-essential python-software-properties && \
-	apt-get clean;
+RUN apt update && \
+	apt install -y sudo curl zip openssl build-essential python-software-properties && \
+	apt clean;
 	
 # Add nodejs distribution
-RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo bash - && apt-get update && apt-get clean;
+RUN curl -sL https://deb.nodesource.com/setup_7.x | bash - && apt-get update && apt-get clean;
 
 #
 # Default environment variables
