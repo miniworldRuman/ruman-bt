@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "ennweb/kvm",  // Any generic, debian-based image.
+    "image": "docker",  // Any generic, debian-based image.
     "features": {
         }
     }
