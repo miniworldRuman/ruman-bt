@@ -1,7 +1,10 @@
-{
-    "name": "my-project-devcontainer",
-    "image": "picoded/ubuntu-docker",  // Any generic, debian-based image.
-    "features": {
-        }
-    }
+{  
+    "name": "CentOS 7 with KVM",  
+    "dockerFile": "Dockerfile",  
+    "runArgs": [  
+        "--privileged"  // 允许容器访问宿主机的硬件  
+    ],  
+    "settings": {},  
+    "extensions": [],  
+    "postCreateCommand": "systemctl start libvirtd.service"  // 如果需要的话，可以在容器创建后手动启动服务  
 }
