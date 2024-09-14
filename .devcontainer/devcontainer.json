@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "docker",  // Any generic, debian-based image.
+    "image": "jianhuiz/ubuntu-docker",  // Any generic, debian-based image.
     "features": {
         }
     }
