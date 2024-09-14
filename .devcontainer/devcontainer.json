@@ -1,15 +1,7 @@
-{  
-    "name": "Ubuntu with KVM",  
-    "dockerFile": "Dockerfile",  
-    "context": "..",  
-    "postCreateCommand": "echo 'KVM container ready, but note that KVM might not work as expected in Docker.'",  
-    "extensions": [  
-        "ms-vscode.cpptools",  
-        "redhat.vscode-yaml"  
-        // Add other extensions you need  
-    ],  
-    "settings": {  
-        "terminal.integrated.shell.linux": "/bin/bash"  
-    },  
-    // Add other configurations as needed  
+{
+    "name": "my-project-devcontainer",
+    "image": "ennweb/kvm",  // Any generic, debian-based image.
+    "features": {
+        }
+    }
 }
