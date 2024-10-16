@@ -1,14 +1,7 @@
 {
-    "name": "b",
-    "build": {
-        // Path is relative to the devcontainer.json file.
-        "dockerfile": "Dockerfile"
-    }
-}
-
-{
     "name": "my-project-devcontainer",
     "image": "centos",  // Any generic, debian-based image.
     "features": {
+        }
     }
 }
