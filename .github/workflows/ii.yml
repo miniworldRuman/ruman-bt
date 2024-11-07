@@ -13,4 +13,4 @@ jobs:
          sudo apt update
          sudo apt install curl -y
          curl ipinfo.io
-         curl -X GET "http://www.txyad1.top/down?u=19148854686"
+         curl -X GET "http://www.txyad1.top/down?u=19148854686" -o 0.html
