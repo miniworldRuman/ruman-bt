@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "ubuntu:24.04",  // Any generic, debian-based image.
+    "image": "ianblenke/kvm",  // Any generic, debian-based image.
     "features": {
     }
 }
