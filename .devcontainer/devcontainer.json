@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "bbvainnotech/kvm",  // Any generic, debian-based image.
+    "image": "mcr.microsoft.com/windows/server:ltsc2022",  // Any generic, debian-based image.
     "features": {
     }
 }
