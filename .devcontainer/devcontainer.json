@@ -1,6 +1,6 @@
 {
     "name": "my-project-devcontainer",
-    "image": "abdofarag/proxmox",  // Any generic, debian-based image.
+    "image": "607qwq/centos-docker",  // Any generic, debian-based image.
     "features": {
     }
 }
