@@ -1,6 +1,0 @@
-{
-    "name": "my-project-devcontainer",
-    "image": "607qwq/centos-docker",  // Any generic, debian-based image.
-    "features": {
-    }
-}
