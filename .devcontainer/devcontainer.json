@@ -2,7 +2,7 @@
   "name": "My Dev Container",
   "image": "docker.cnb.cool/astronaut-leica/deskdop/dockerfile-caches:2e85c520e69304f2d21cfff687ed779d01d6aca3",
   "runArgs": [
-    "--privileged=true --gpus all"
+    "--privileged=true"
   ],
   "customizations": {
     "vscode": {
