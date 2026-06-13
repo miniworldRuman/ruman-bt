@@ -84,9 +84,9 @@ RUN echo '{\n\
   "locale": "zh-cn"\n\
 }' > /home/$USERNAME/.config/code-server/config.yaml
 
-# 安装中文语言包和 C/C++ 扩展
+# 安装中文语言包和 C/C++ 扩展（Open VSX 兼容版）
 RUN code-server --install-extension MS-CEINTL.vscode-language-pack-zh-hans \
-    && code-server --install-extension ms-vscode.cpptools
+    && code-server --install-extension ms-vscode.cpptools-community
 
 # 配置 MinGW-w64 环境变量（针对非root用户）
 RUN echo '\n# MinGW-w64 配置\n\
