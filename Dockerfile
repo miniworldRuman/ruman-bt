@@ -8,6 +8,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=zh_CN.UTF-8 \
     TZ=Asia/Shanghai
 
+# 更换国内镜像源（可选，加速下载）
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
 
 # 安装基础工具和中文语言支持
 RUN apt-get update && apt-get install -y \
@@ -28,6 +31,12 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     nodejs \
     npm \
+    # ============ 新增：MinGW-w64 ============
+    mingw-w64 \
+    gdb \
+    cmake \
+    ninja-build \
+    # =======================================
     # 清理缓存
     && rm -rf /var/lib/apt/lists/*
 
@@ -66,7 +75,8 @@ USER $USERNAME
 WORKDIR /home/$USERNAME
 
 RUN mkdir -p /home/$USERNAME/.config/code-server \
-    && mkdir -p /home/$USERNAME/.local/share/code-server/extensions
+    && mkdir -p /home/$USERNAME/.local/share/code-server/extensions \
+    && mkdir -p /home/$USERNAME/workspace
 
 # 配置 code-server 为中文
 RUN echo '{\n\
@@ -76,8 +86,17 @@ RUN echo '{\n\
   "locale": "zh-cn"\n\
 }' > /home/$USERNAME/.config/code-server/config.yaml
 
-# 安装中文语言包（通过命令行）
-RUN code-server --install-extension MS-CEINTL.vscode-language-pack-zh-hans
+# 安装中文语言包和 C/C++ 扩展
+RUN code-server --install-extension MS-CEINTL.vscode-language-pack-zh-hans \
+    && code-server --install-extension ms-vscode.cpptools
+
+# 配置 MinGW-w64 环境变量（针对非root用户）
+RUN echo '\n# MinGW-w64 配置\n\
+export PATH=/usr/bin:$PATH\n\
+alias x86_64-w64-mingw32-gcc="x86_64-w64-mingw32-gcc-posix"\n\
+alias x86_64-w64-mingw32-g++="x86_64-w64-mingw32-g++-posix"\n\
+alias i686-w64-mingw32-gcc="i686-w64-mingw32-gcc-posix"\n\
+alias i686-w64-mingw32-g++="i686-w64-mingw32-g++-posix"' >> /home/$USERNAME/.bashrc
 
 # 切换回 root 用户以便启动服务
 USER root
