@@ -63,16 +63,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ─────────────────────────────────────────────
-# 4) KDE Plasma Desktop + 中文语言包
-#    ⚠ kde-plasma-desktop 会拉很多包，不换源 + 不考虑体积 → 让它跑完
+# 4) KDE Plasma Desktop + 中文界面（Debian 12 正确方式）
 # ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
         kde-plasma-desktop \
-        kde-l10n-zhcn \
+        plasma-desktop-data \
         sddm \
-        # 让 Qt/KDE 找到中文字体
         fonts-hack \
         breeze-icon-theme \
+        # 确保 KDE 能加载中文翻译
+        libkf5config-data \
+        libkf5i18n-data \
     && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -91,14 +92,14 @@ RUN mkdir -p /home/kdeuser/.vnc && \
     chmod 600 /home/kdeuser/.vnc/passwd && \
     chown -R kdeuser:kdeuser /home/kdeuser/.vnc
 
-# VNC xstartup —— 启动 KDE (startplasma-x11)
 RUN printf '%s\n' \
     '#!/bin/sh' \
     'unset SESSION_MANAGER' \
     'unset DBUS_SESSION_BUS_ADDRESS' \
     'export LANG=zh_CN.UTF-8' \
-    'export LANGUAGE=zh_CN:zh:en' \
+    'export LANGUAGE=zh_CN:zh' \
     'export LC_ALL=zh_CN.UTF-8' \
+    'export KDE_LANG=zh_CN.UTF-8' \
     'export XDG_CURRENT_DESKTOP=KDE' \
     'export XDG_SESSION_TYPE=x11' \
     'eval "$(dbus-launch --sh-syntax)"' \
