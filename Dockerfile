@@ -9,9 +9,8 @@ ENV LC_ALL=zh_CN.UTF-8
 ENV ANDROID_HOME=/opt/android-sdk
 ENV PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
-# ---------- APT 源（国外机器，用官方源最快） ----------
-RUN sed -i 's|deb.debian.org|deb.debian.org|g' /etc/apt/sources.list \
- && apt-get update && apt-get upgrade -y
+
+RUN apt-get update && apt-get upgrade -y
 
 # ---------- 基础系统 + 中文 ----------
 RUN apt-get install -y \
