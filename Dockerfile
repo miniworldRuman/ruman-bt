@@ -175,7 +175,7 @@ RUN mkdir -p ${WINE_PREFIX} \
     && ln -sf /opt/wine-11.0/bin/wine /usr/local/bin/wine \
     && ln -sf /opt/wine-11.0/bin/wine64 /usr/local/bin/wine64 \
     && ln -sf /opt/wine-11.0/bin/wineserver /usr/local/bin/wineserver \
-    && rm -f ${WINE_PREFIX}/wine-11.0.tar.xz
+    && rm -f ${WINE_PREFIX}
 
 # ─────────────────────────────────────────────
 # 8) 手动启动 VNC 的脚本
