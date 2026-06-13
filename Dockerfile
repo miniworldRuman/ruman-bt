@@ -10,7 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WINE_PREFIX=/usr/local/wine-src
 
 # ─────────────────────────────────────────────
-# 1) 基础系统 & 中文 locale & 中文字体
+# 1) 基础系统 + 中文 locale + 中文字体
 # ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -19,20 +19,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gnupg2 \
         locales \
         tzdata \
-    && \
-    # 启用 zh_CN.UTF-8
-    sed -i 's/# zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen && \
-    locale-gen zh_CN.UTF-8 && \
-    update-locale LANG=zh_CN.UTF-8 && \
-    # 中文字体（不换源也能拉到，就是慢点）
-    apt-get install -y --no-install-recommends \
+    && sed -i 's/# zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen zh_CN.UTF-8 \
+    && update-locale LANG=zh_CN.UTF-8 \
+    && apt-get install -y --no-install-recommends \
         fonts-noto-cjk \
         fonts-noto-cjk-extra \
         fonts-wqy-zenhei \
         fonts-wqy-microhei \
         fonts-arphic-uming \
-    && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ─────────────────────────────────────────────
 # 2) Git + OpenSSH
@@ -42,14 +38,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         openssh-server \
         sudo \
         passwd \
-    && \
-    # SSH 基础配置：允许 root 密码/密钥登录（按你需求改）
-    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    mkdir -p /run/sshd && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    && sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && mkdir -p /run/sshd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ─────────────────────────────────────────────
-# 3) TigerVNC + D-Bus(X11 session 必需品) + xauth
+# 3) TigerVNC + X11 基础（不自启）
 # ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
         tigervnc-standalone-server \
@@ -57,13 +51,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         dbus-x11 \
         xauth \
         x11-utils \
-        # 一个轻量窗口管理器做 fallback（可选但很实用）
         openbox \
-    && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ─────────────────────────────────────────────
-# 4) KDE Plasma Desktop + 中文界面（Debian 12 正确方式）
+# 4) KDE Plasma Desktop + 中文（Debian 12 正确方式）
 # ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
         kde-plasma-desktop \
@@ -71,61 +63,36 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         sddm \
         fonts-hack \
         breeze-icon-theme \
-        # 确保 KDE 能加载中文翻译
         libkf5config-data \
         libkf5i18n-data \
-    && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ─────────────────────────────────────────────
-# 5) 创建普通用户（VNC / KDE 不建议全程 root）
+# 5) 创建普通用户
 # ─────────────────────────────────────────────
-RUN useradd -m -s /bin/bash -G sudo,video,render kdeuser && \
-    echo "kdeuser:kdepass" | chpasswd && \
-    echo "root:rootpass"   | chpasswd && \
-    # sudo 免密（容器场景方便，生产请去掉）
-    echo "kdeuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN useradd -m -s /bin/bash -G sudo,video,render kdeuser \
+    && echo "kdeuser:kdepass" | chpasswd \
+    && echo "root:rootpass"   | chpasswd \
+    && echo "kdeuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# VNC 密码目录（默认密码: vncpass — 进去后自己 vncpasswd 改）
-RUN mkdir -p /home/kdeuser/.vnc && \
-    echo -n "vncpass" | vncpasswd -f > /home/kdeuser/.vnc/passwd && \
-    chmod 600 /home/kdeuser/.vnc/passwd && \
-    chown -R kdeuser:kdeuser /home/kdeuser/.vnc
-
-RUN printf '%s\n' \
-    '#!/bin/sh' \
-    'unset SESSION_MANAGER' \
-    'unset DBUS_SESSION_BUS_ADDRESS' \
-    'export LANG=zh_CN.UTF-8' \
-    'export LANGUAGE=zh_CN:zh' \
-    'export LC_ALL=zh_CN.UTF-8' \
-    'export KDE_LANG=zh_CN.UTF-8' \
-    'export XDG_CURRENT_DESKTOP=KDE' \
-    'export XDG_SESSION_TYPE=x11' \
-    'eval "$(dbus-launch --sh-syntax)"' \
-    'exec startplasma-x11 &' \
-    > /home/kdeuser/.vnc/xstartup && \
-    chmod +x /home/kdeuser/.vnc/xstartup && \
-    chown kdeuser:kdeuser /home/kdeuser/.vnc/xstartup
+# VNC 目录（无密码）
+RUN mkdir -p /home/kdeuser/.vnc \
+    && chown -R kdeuser:kdeuser /home/kdeuser/.vnc
 
 # ─────────────────────────────────────────────
-# 6) code-server（官方 install.sh → 自动选 deb 包）
+# 6) code-server
 # ─────────────────────────────────────────────
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-# code-server 默认监听 127.0.0.1:8080，改成 0.0.0.0 以便容器外访问
-RUN mkdir -p /home/kdeuser/.config/code-server && \
-    printf 'bind-addr: 0.0.0.0:8080\nauth: password\npassword: codepass\ncert: false\n' \
-      > /home/kdeuser/.config/code-server/config.yaml && \
-    chown -R kdeuser:kdeuser /home/kdeuser/.config
+RUN mkdir -p /home/kdeuser/.config/code-server \
+    && printf 'bind-addr: 0.0.0.0:8080\nauth: password\npassword: codepass\ncert: false\n' \
+       > /home/kdeuser/.config/code-server/config.yaml \
+    && chown -R kdeuser:kdeuser /home/kdeuser/.config
 
 # ─────────────────────────────────────────────
-# 7) Wine 11.0 —— 从官方源码 tar.xz 编译安装
-#    https://dl.winehq.org/wine/source/11.0/wine-11.0.tar.xz
-#    ⚠ 这一步是整份 Dockerfile 最耗时的（取决于 CPU）
+# 7) Wine 11.0 源码编译
 # ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        # ── 编译工具 ──
         build-essential \
         flex \
         bison \
@@ -133,10 +100,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         g++ \
         make \
         pkg-config \
-        # WoW64 / 32-bit 兼容层需要的 multilib
         gcc-multilib \
         g++-multilib \
-        # ── X11 / 图形 ──
         libx11-dev \
         libx11-dev:i386 \
         libxext-dev \
@@ -162,21 +127,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libgl1-mesa-dev \
         libgl1-mesa-dev:i386 \
         libwayland-dev \
-        # ── 字体 / 文本 ──
         libfreetype-dev \
         libfreetype-dev:i386 \
         libfontconfig1-dev \
         libfontconfig1-dev:i386 \
-        # ── 加密 / 网络 ──
         libgnutls28-dev \
         libgnutls28-dev:i386 \
         libssl-dev \
         libssl-dev:i386 \
-        # ── D-Bus / 音频 / 媒体 ──
         libdbus-1-dev \
         libpulse-dev \
         libasound2-dev \
-        # ── 其他常用依赖 ──
         libjpeg-dev \
         libjpeg-dev:i386 \
         libpng-dev \
@@ -195,51 +156,100 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libxslt1-dev \
         libgstreamer1.0-dev \
         libgstreamer-plugins-base1.0-dev \
-        # ── 下载工具 ──
         xz-utils \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 下载 & 编译 & 安装 Wine 11.0
-RUN mkdir -p ${WINE_PREFIX} && cd ${WINE_PREFIX} && \
-    wget -q https://dl.winehq.org/wine/source/11.0/wine-11.0.tar.xz && \
-    tar xf wine-11.0.tar.xz && \
-    mkdir -p ${WINE_PREFIX}/wine-11.0-build && \
-    cd ${WINE_PREFIX}/wine-11.0-build && \
-    # Wine 11.0 的新 WoW64 架构：一次 configure 即可（含 32-bit via Wow64）
-    ../wine-11.0/configure \
-        --enable-win64 \
-        --prefix=/opt/wine-11.0 \
+RUN mkdir -p ${WINE_PREFIX} \
+    && cd ${WINE_PREFIX} \
+    && wget -q https://dl.winehq.org/wine/source/11.0/wine-11.0.tar.xz \
+    && tar xf wine-11.0.tar.xz \
+    && mkdir -p ${WINE_PREFIX}/wine-11.0-build \
+    && cd ${WINE_PREFIX}/wine-11.0-build \
+    && ../wine-11.0/configure --enable-win64 --prefix=/opt/wine-11.0 \
     && make -j$(nproc) \
     && make install \
-    && \
-    # 建软链让 wine/wineserver 进 PATH
-    ln -sf /opt/wine-11.0/bin/wine     /usr/local/bin/wine     && \
-    ln -sf /opt/wine-11.0/bin/wine64   /usr/local/bin/wine64   && \
-    ln -sf /opt/wine-11.0/bin/wineserver /usr/local/bin/wineserver && \
-    # 清理源码（可选——你说不考虑体积，但你也可以留着）
-    rm -rf ${WINE_PREFIX}/wine-11.0.tar.xz
+    && ln -sf /opt/wine-11.0/bin/wine /usr/local/bin/wine \
+    && ln -sf /opt/wine-11.0/bin/wine64 /usr/local/bin/wine64 \
+    && ln -sf /opt/wine-11.0/bin/wineserver /usr/local/bin/wineserver \
+    && rm -f ${WINE_PREFIX}/wine-11.0.tar.xz
 
 # ─────────────────────────────────────────────
-# 8) 入口脚本：启动 sshd + (可选)VNC + 留 shell
+# 8) 手动启动 VNC 的脚本
 # ─────────────────────────────────────────────
 RUN printf '%s\n' \
-    '#!/bin/bash' \
-    'set -e' \
-    'echo "==> Starting sshd..."' \
-    '/usr/sbin/sshd -D &' \
-    'echo "==> SSH up.  VNC @ :1 (port 5901).  code-server @ 0.0.0.0:8080"' \
-    'echo "    VNC connect:  vncviewer <container-ip>:1   (pass: vncpass)"' \
-    'echo "    code-server:  http://<container-ip>:8080    (pass: codepass)"' \
-    'echo ""' \
-    '# 默认以 kdeuser 启动 VNC（display :1）' \
-    'su - kdeuser -c "vncserver :1 -geometry 1920x1080 -depth 24" &' \
-    '# 启动 code-server（也可手动 su - kdeuser -c "code-server"）' \
-    'su - kdeuser -c "code-server &"' \
-    '# 前台挂住' \
-    'wait' \
-    > /entrypoint.sh \
-    && chmod +x /entrypoint.sh
+'#!/bin/sh' \
+'DISP=":1"' \
+'GEOM="1920x1080"' \
+'DEPTH="24"' \
+'' \
+'echo "==> Starting Xvnc on ${DISP} (no password)..."' \
+'rm -f /tmp/.X${DISP#:}-lock /home/kdeuser/.vnc/*${DISP}*.pid' \
+'' \
+'Xvnc ${DISP} -geometry ${GEOM} -depth ${DEPTH} -SecurityTypes None -localhost no &' \
+'' \
+'for i in $(seq 1 15); do' \
+'  xdpyinfo -display ${DISP} >/dev/null 2>&1 && break' \
+'  sleep 1' \
+'done' \
+'' \
+'export DISPLAY=${DISP}' \
+'export LANG=zh_CN.UTF-8' \
+'export LC_ALL=zh_CN.UTF-8' \
+'export XDG_CURRENT_DESKTOP=KDE' \
+'export XDG_SESSION_TYPE=x11' \
+'' \
+'eval "$(dbus-launch --sh-syntax)"' \
+'' \
+'echo "==> Launching KDE Plasma..."' \
+'exec startplasma-x11' \
+> /home/kdeuser/start-vnc.sh \
+&& chmod +x /home/kdeuser/start-vnc.sh \
+&& chown kdeuser:kdeuser /home/kdeuser/start-vnc.sh
 
-EXPOSE 22 5901 6080 8080
+# ─────────────────────────────────────────────
+# 9) 根目录启动说明
+# ─────────────────────────────────────────────
+RUN echo '========================================\n\
+VNC (KDE Plasma) 未自动启动\n\
+\n\
+手动启动方式：\n\
+  docker exec -it <容器名> bash\n\
+  su - kdeuser\n\
+  ./start-vnc.sh\n\
+\n\
+VNC 连接：\n\
+  地址: IP:5901\n\
+  认证: 无密码\n\
+\n\
+其他服务：\n\
+  SSH      : 22   (root / kdeuser)\n\
+  code-server: 8080 (pass: codepass)\n\
+\n\
+Wine 11.0:\n\
+  安装路径: /opt/wine-11.0\n\
+  命令: wine / wine64\n\
+========================================\n'\
+> /start_vnc.txt
+
+# ─────────────────────────────────────────────
+# 10) 入口（仅 SSH + code-server）
+# ─────────────────────────────────────────────
+RUN printf '%s\n' \
+'#!/bin/bash' \
+'set -e' \
+'echo "==> Starting sshd..."' \
+'/usr/sbin/sshd -D &' \
+'' \
+'echo "==> Starting code-server on 0.0.0.0:8080..."' \
+'su - kdeuser -c "code-server &"' \
+'' \
+'echo "==> VNC is NOT auto-started."' \
+'echo "==> Read /start_vnc.txt for manual VNC instructions."' \
+'' \
+'wait' \
+> /entrypoint.sh \
+&& chmod +x /entrypoint.sh
+
+EXPOSE 22 5901 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
