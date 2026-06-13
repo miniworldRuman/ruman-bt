@@ -10,6 +10,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WINE_PREFIX=/usr/local/wine-src
 
 # ─────────────────────────────────────────────
+# 0) 启用 i386（Wine / multilib 必需）
+# ─────────────────────────────────────────────
+RUN dpkg --add-architecture i386
+
+# ─────────────────────────────────────────────
 # 1) 基础系统 + 中文 locale + 中文字体
 # ─────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -29,7 +34,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         fonts-wqy-microhei \
         fonts-arphic-uming \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # ─────────────────────────────────────────────
 # 2) Git + OpenSSH
 # ─────────────────────────────────────────────
