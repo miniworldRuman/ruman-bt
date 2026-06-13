@@ -1,88 +1,92 @@
+# 使用 Debian Stable 作为基础镜像
 FROM debian:bookworm-slim
 
-# ========== 基础 ==========
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=zh_CN.UTF-8
-ENV LC_ALL=zh_CN.UTF-8
-ENV TZ=Asia/Shanghai
+# 设置环境变量（避免交互式配置）
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=zh_CN.UTF-8 \
+    LANGUAGE=zh_CN:zh \
+    LC_ALL=zh_CN.UTF-8 \
+    TZ=Asia/Shanghai
 
-# ========== 1. 系统 + OpenSSH ==========
+
+# 安装基础工具和中文语言支持
 RUN apt-get update && apt-get install -y \
-    locales \
-    tzdata \
+    # 基础工具
     curl \
     wget \
     git \
-    openssh-client \
     openssh-server \
-    unzip \
-    zip \
+    sudo \
     ca-certificates \
     gnupg \
-    sudo \
-    procps \
-    net-tools \
-    vim \
+    # 中文语言支持
+    locales \
+    fonts-noto-cjk \
+    # 开发工具
+    build-essential \
+    python3 \
+    python3-pip \
+    nodejs \
+    npm \
+    # 清理缓存
     && rm -rf /var/lib/apt/lists/*
 
-# 中文环境
-RUN sed -i '/zh_CN.UTF-8/s/^# //g' /etc/locale.gen \
-    && locale-gen zh_CN.UTF-8 \
-    && update-locale LANG=zh_CN.UTF-8
+# 配置中文 locale
+RUN echo "zh_CN.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen zh_CN.UTF-8 && \
+    update-locale LANG=zh_CN.UTF-8
 
-# SSH 配置
-RUN mkdir /var/run/sshd
-RUN echo "PermitRootLogin yes" >> /etc/ssh/sshd_config \
-    && echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+# 配置时区
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# 设置 root 密码（⚠️ 生产环境请改成密钥）
-RUN echo 'root:dev123456' | chpasswd
-
-# ========== 2. Java（Android） ==========
-RUN apt-get update && apt-get install -y openjdk-17-jdk \
-    && rm -rf /var/lib/apt/lists/*
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-
-# ========== 3. .NET SDK ==========
-RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && apt-get update \
-    && apt-get install -y dotnet-sdk-8.0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# ========== 4. Android SDK ==========
-ENV ANDROID_HOME=/opt/android-sdk
-ENV PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
-RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
-    && cd /tmp \
-    && wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
-    && unzip commandlinetools-linux-*.zip -d ${ANDROID_HOME}/cmdline-tools \
-    && mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest \
-    && rm -f commandlinetools-linux-*.zip
-
-RUN yes | sdkmanager --licenses || true
-RUN sdkmanager "platform-tools" \
-    "platforms;android-34" \
-    "build-tools;34.0.0"
-
-# ========== 5. code-server ==========
+# 安装 code-server
 RUN curl -fsSL https://code-server.dev/install.sh | sh
+
+# 创建非 root 用户（推荐做法）
+ARG USERNAME=dev
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m -s /bin/bash $USERNAME \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# 配置 SSH
+RUN mkdir -p /var/run/sshd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# 设置默认密码（建议运行时覆盖）
+RUN echo "root:dev123" | chpasswd \
+    && echo "$USERNAME:dev123" | chpasswd
+
+# 创建 code-server 配置目录并设置权限
+USER $USERNAME
+WORKDIR /home/$USERNAME
+
+RUN mkdir -p /home/$USERNAME/.config/code-server \
+    && mkdir -p /home/$USERNAME/.local/share/code-server/extensions
+
+# 配置 code-server 为中文
+RUN echo '{\n\
+  "auth": "password",\n\
+  "password": "dev123",\n\
+  "cert": false,\n\
+  "locale": "zh-cn"\n\
+}' > /home/$USERNAME/.config/code-server/config.yaml
+
+# 安装中文语言包（通过命令行）
 RUN code-server --install-extension MS-CEINTL.vscode-language-pack-zh-hans
 
-# ========== 6. 用户 ==========
-RUN useradd -m -s /bin/bash dev \
-    && echo "dev:dev123456" | chpasswd \
-    && echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+# 切换回 root 用户以便启动服务
+USER root
 
-USER dev
-WORKDIR /home/dev
-
-# ========== 7. 端口 ==========
+# 暴露端口
 EXPOSE 22 8080
 
-# ========== 8. 启动 SSH + code-server ==========
-COPY entrypoint.sh /entrypoint.sh
-RUN sudo chmod +x /entrypoint.sh
+# 启动脚本
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/start.sh"]
