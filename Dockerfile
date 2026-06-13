@@ -1,90 +1,82 @@
-# ---------- 基础镜像 ----------
-FROM debian:bookworm
+FROM debian:bookworm-slim
 
-# ---------- 环境变量 ----------
+# ========== 基础环境变量 ==========
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=zh_CN.UTF-8
-ENV LANGUAGE=zh_CN:zh
 ENV LC_ALL=zh_CN.UTF-8
-ENV ANDROID_HOME=/opt/android-sdk
-ENV PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+ENV TZ=Asia/Shanghai
 
-
-RUN apt-get update && apt-get upgrade -y
-
-# ---------- 基础系统 + 中文 ----------
-RUN apt-get install -y \
+# ========== 1. 系统基础 & 中文环境 ==========
+RUN apt-get update && apt-get install -y \
     locales \
     tzdata \
     curl \
     wget \
     git \
+    openssh-client \
     unzip \
     zip \
     ca-certificates \
     gnupg \
-    software-properties-common \
-    build-essential \
-    lib32stdc++6 \
-    lib32z1 \
-    openjdk-17-jdk \
-    fonts-noto-cjk \
+    lsb-release \
     sudo \
-    vim \
+    procps \
     net-tools \
-    iputils-ping \
- && rm -rf /var/lib/apt/lists/*
+    vim \
+    && rm -rf /var/lib/apt/lists/*
 
-# 中文 locale
-RUN echo "zh_CN.UTF-8 UTF-8" >> /etc/locale.gen \
- && locale-gen zh_CN.UTF-8
+RUN sed -i '/zh_CN.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen zh_CN.UTF-8 \
+    && update-locale LANG=zh_CN.UTF-8
 
-# ---------- OpenSSH ----------
-RUN apt-get update && apt-get install -y openssh-server \
- && mkdir /var/run/sshd \
- && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+# ========== 2. Java（Android 推荐 JDK 17） ==========
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jdk \
+    && rm -rf /var/lib/apt/lists/*
 
-# ---------- code-server ----------
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+
+# ========== 3. .NET SDK（官方源，国外机器） ==========
+RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update \
+    && apt-get install -y dotnet-sdk-8.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ========== 4. Android SDK（命令行工具） ==========
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
+RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
+    && cd /tmp \
+    && wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
+    && unzip commandlinetools-linux-*.zip -d ${ANDROID_HOME}/cmdline-tools \
+    && mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest \
+    && rm -f commandlinetools-linux-*.zip
+
+# 预接受 license（非交互）
+RUN yes | sdkmanager --licenses || true
+
+# 常用 Android 构建组件
+RUN sdkmanager "platform-tools" \
+    "platforms;android-34" \
+    "build-tools;34.0.0" \
+    "ndk;26.1.10909125"
+
+# ========== 5. code-server（VS Code Web） ==========
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 
-# ---------- Android SDK ----------
-RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
- && cd ${ANDROID_HOME}/cmdline-tools \
- && wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
- && unzip commandlinetools-linux-*.zip \
- && mv cmdline-tools latest \
- && rm *.zip
+# 中文语言包（code-server 内安装）
+RUN code-server --install-extension MS-CEINTL.vscode-language-pack-zh-hans
 
-# SDK 必备包
-RUN yes | sdkmanager --licenses \
- && sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+# ========== 6. 创建非 root 用户 ==========
+RUN useradd -m -s /bin/bash dev \
+    && echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# ---------- 创建普通用户（推荐） ----------
-ARG USERNAME=dev
-ARG UID=1000
-ARG GID=1000
+USER dev
+WORKDIR /home/dev
 
-RUN groupadd --gid $GID $USERNAME \
- && useradd --uid $UID --gid $GID --create-home --shell /bin/bash $USERNAME \
- && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME
+# ========== 7. 启动 code-server ==========
+EXPOSE 8080
 
-# ---------- code-server 中文 ----------
-RUN mkdir -p /home/$USERNAME/.local/share/code-server/User \
- && echo '{ "locale": "zh-cn" }' > /home/$USERNAME/.local/share/code-server/User/settings.json
-
-# ---------- 暴露端口 ----------
-EXPOSE 22 8080
-
-# ---------- 启动脚本 ----------
-COPY <<EOF /usr/local/bin/entrypoint.sh
-#!/bin/bash
-service ssh start
-exec code-server --bind-addr 0.0.0.0:8080 --auth none
-EOF
-
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-WORKDIR /workspace
-USER $USERNAME
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["code-server", "--bind-addr=0.0.0.0:8080", "--auth=none"]
