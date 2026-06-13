@@ -6,9 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=zh_CN.UTF-8 \
     TZ=Asia/Shanghai
 
-# 国内镜像
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
-    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
     
 RUN apt-get update && apt-get install -y \
     curl \
