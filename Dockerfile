@@ -121,4 +121,3 @@ RUN chmod +x /entry.sh
 
 WORKDIR /root
 EXPOSE 22 5901 8080
-CMD ["/entry.sh"]
