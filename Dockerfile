@@ -118,6 +118,24 @@ echo "  Code: http://<host>:<映射到8080>  (默认密码 changeme)"
 tail -f /dev/null
 ENTRY
 RUN chmod +x /entry.sh
+RUN install -d -m 0755 /etc/apt/keyrings
+RUN wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+RUN tee /etc/apt/sources.list.d/mozilla.sources > /dev/null << EOF
+Types: deb
+URIs: https://packages.mozilla.org/apt
+Suites: mozilla
+Components: main
+Signed-By: /etc/apt/keyrings/packages.mozilla.org.asc
+EOF
+
+RUN tee /etc/apt/preferences.d/mozilla > /dev/null << EOF
+Package: *
+Pin: origin packages.mozilla.org
+Pin-Priority: 1000
+EOF
+
+RUN apt-get update
+apt-get install firefox -y
 
 
 EXPOSE 22 5901 8080
