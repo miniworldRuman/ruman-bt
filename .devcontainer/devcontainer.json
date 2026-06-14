@@ -1,6 +1,6 @@
 {
   "name": "My Dev Container",
-  "image": "docker",
+  "image": "registry.cn-shanghai.aliyuncs.com/ruman/wine:1.0.0",
   "runArgs": [
     "--privileged=true"
   ],
