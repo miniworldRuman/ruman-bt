@@ -135,7 +135,7 @@ Pin-Priority: 1000
 EOF
 
 RUN apt-get update
-apt-get install firefox -y
+RUN apt-get install firefox -y
 
 
 EXPOSE 22 5901 8080
