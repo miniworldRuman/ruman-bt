@@ -121,3 +121,4 @@ RUN chmod +x /entry.sh
 
 
 EXPOSE 22 5901 8080
+CMD ["bash"]
