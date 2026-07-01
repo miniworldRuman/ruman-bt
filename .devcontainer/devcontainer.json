@@ -1,6 +1,6 @@
 {
   "name": "My Dev Container",
-  "image": "registry.cn-shanghai.aliyuncs.com/ruman/wine:1.0.0",
+  "image": "docker.cnb.cool/astronaut-leica/desktop/dockerfile-caches:2fafcf654e9546d15bf6146b6e44e5eba7f2dbcc",
   "runArgs": [
     "--privileged=true"
   ],
