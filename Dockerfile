@@ -115,7 +115,7 @@ RUN echo 'bind-addr: 0.0.0.0:8080\nauth: password\npassword: devpassword\ncert: 
 # 安装 opencode (假设为 npm 包 opencode 或从 GitHub 安装)
 # 如果 opencode 是其他安装方式，请根据实际情况调整
 # =============================================================================
-RUN npm install -g opencode 2>/dev/null || \
+RUN npm i -g opencode-ai 2>/dev/null || \
     (echo "opencode npm package not found, skipping npm install" && \
      mkdir -p /opt/opencode)
 
