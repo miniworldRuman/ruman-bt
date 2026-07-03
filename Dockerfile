@@ -112,16 +112,9 @@ RUN mkdir -p /root/.config/code-server
 RUN echo 'bind-addr: 0.0.0.0:8080\nauth: password\npassword: devpassword\ncert: false\nlocale: zh-CN' > /root/.config/code-server/config.yaml
 
 # =============================================================================
-# 安装 opencode (假设为 npm 包 opencode 或从 GitHub 安装)
-# 如果 opencode 是其他安装方式，请根据实际情况调整
+# 安装 opencode-ai (npm 包名)
 # =============================================================================
-RUN npm i -g opencode-ai 2>/dev/null || \
-    (echo "opencode npm package not found, skipping npm install" && \
-     mkdir -p /opt/opencode)
-
-# 如果 opencode 需要从 GitHub 安装，取消下面注释：
-# RUN wget -q https://github.com/opencode-ai/opencode/releases/download/${OPENCODE_VERSION}/opencode-linux-amd64 -O /usr/local/bin/opencode && \
-#     chmod +x /usr/local/bin/opencode
+RUN npm install -g opencode-ai
 
 # =============================================================================
 # 配置 OpenSSH 服务器
@@ -136,13 +129,13 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/
     echo "root:devpassword" | chpasswd
 
 # =============================================================================
-# 配置 Python pip 使用国内镜像（可选，加速国内下载）
+# 升级 pip 并安装常用 Python 包
+# 使用 --break-system-packages 绕过 Debian PEP 668 限制
 # =============================================================================
-RUN pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple 2>/dev/null || true && \
-    pip3 install --upgrade pip setuptools wheel
+RUN pip3 install --break-system-packages --upgrade pip setuptools wheel
 
 # 常用 Python 包
-RUN pip3 install --no-cache-dir \
+RUN pip3 install --break-system-packages --no-cache-dir \
     requests \
     numpy \
     pandas \
